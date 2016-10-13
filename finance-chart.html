@@ -9,8 +9,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<script src="../moment/moment.js"></script>
 <link rel="import" href="../finance-historical/finance-historical.html">
 <link rel="import" href="../chart-elements/chart-line.html">
+<script src="../Chart.Zoom.js/Chart.Zoom.js"></script>
+
 
 
 <!--
@@ -44,7 +47,7 @@ Example:
   </style>
   <finance-historical id="finance" symbol="[[symbol]]" end="[[end]]" start="[[start]]" data="{{response}}"></finance-historical>
   <template is="dom-repeat" items="{{response}}">
-    <chart-line data="[[_getData(item)]]"></chart-line>
+    <chart-line data="[[_getData(item)]]" options="{{options}}"></chart-line>
   </template>
 </template>
 <script>
@@ -67,10 +70,45 @@ Polymer({
     data: {
       type:Array,
       notify:true
+    },
+    options: {
+      type: Object,
+      value: function(){return {
+
+        scales: {
+            xAxes: [{
+                type: 'time',
+                time: {
+                  displayFormats: {
+                    day: 'DD-MMM-YY',
+                    month: 'DD-MMM-YY',
+                    year: "DD-MMM-YY",
+                    week:"DD-MMM-YY"
+                  }
+                }
+            }],
+            yAxes: [{
+                type: 'linear'
+            }]
+        },
+        pan: {
+          enabled: true,
+          mode: 'x'
+        },
+        zoom: {
+          enabled: true,
+          mode: 'x',
+        },
+        title:{
+          display: true,
+          text: 'Custom Chart Title'
+        }
+      }
+      },
+      notify:true
     }
   },
   _getData:function(fullData){
-    console.log(fullData);
     var CLOSE= 0;
     var HIGH=1;
     var LOW=2;
@@ -111,7 +149,7 @@ Polymer({
           pointHoverBorderColor: "rgba(220,220,220,1)",
           data: []
         }
-      ]
+      ],
     };
     for (var i=fullData.length -1 ;i>=0;i--){
       var months =["Jan.", "Feb.", "Mar.", "May", "Apr.", "Jun.", "Jul", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
@@ -119,7 +157,7 @@ Polymer({
       day = date.getDate() < 9? '0'+date.getDate():date.getDate();
       month = months[date.getMonth()];
       year = date.getFullYear().toString().slice(2,4)
-      data.labels.push(day + '-' + month + '-' + year);
+      data.labels.push(date);
 
       data.datasets[CLOSE].data.push(fullData[i].Close)
       data.datasets[HIGH].data.push(fullData[i].High)

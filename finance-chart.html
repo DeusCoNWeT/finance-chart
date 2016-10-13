@@ -1,0 +1,133 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../finance-historical/finance-historical.html">
+<link rel="import" href="../chart-elements/chart-line.html">
+
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+<finance-chart></finance-chart>
+
+Example:
+
+<finance-chart>
+<h2>Hello finance-chart</h2>
+</finance-chart>
+
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<dom-module id="finance-chart">
+  <template>
+  <style>
+  :host {
+    display: block;
+    box-sizing: border-box;
+  }
+  chart-line{
+    width: 500px;
+    height: 500px;
+  }
+  </style>
+  <finance-historical id="finance" symbol="[[symbol]]" end="[[end]]" start="[[start]]" data="{{response}}"></finance-historical>
+  <template is="dom-repeat" items="{{response}}">
+    <chart-line data="[[_getData(item)]]"></chart-line>
+  </template>
+</template>
+<script>
+Polymer({
+  is: 'finance-chart',
+
+  properties: {
+    symbol: {
+      type: String,
+      notify:true,
+    },
+    end: {
+      type: Date,
+      notify:true
+    },
+    start: {
+      type: Date,
+      notify:true
+    },
+    data: {
+      type:Array,
+      notify:true
+    }
+  },
+  _getData:function(fullData){
+    console.log(fullData);
+    var CLOSE= 0;
+    var HIGH=1;
+    var LOW=2;
+
+    var data = {
+      labels: [],
+      datasets: [
+        {
+          label: fullData[0].Symbol + '(CLOSE)',
+          backgroundColor: "rgba(220,220,220,0.0)",
+          borderColor: "rgba(39, 97, 209, 1)",
+          borderWidth: 1,
+          pointBackgroundColor: "rgba(39, 97, 209, 1)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgba(220,220,220,1)",
+          data: []
+        },
+        {
+          label: fullData[0].Symbol + '(HIGH)',
+          backgroundColor: "rgba(220,220,220,0.0)",
+          borderColor: "rgba(39, 209, 40, 1)",
+          borderWidth: 1,
+          pointBackgroundColor: "rgba(39, 209, 40, 1)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgba(220,220,220,1)",
+          data: []
+        },
+        {
+          label: fullData[0].Symbol + '(LOW)',
+          backgroundColor: "rgba(220,220,220,0.0)",
+          borderColor: "rgba(223, 91, 35, 1)",
+          borderWidth: 1,
+          pointBackgroundColor: "rgba(223, 91, 35, 1)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgba(220,220,220,1)",
+          data: []
+        }
+      ]
+    };
+    for (var i=fullData.length -1 ;i>=0;i--){
+      var months =["Jan.", "Feb.", "Mar.", "May", "Apr.", "Jun.", "Jul", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
+      var day,month,year, date= new Date(fullData[i].Date);
+      day = date.getDate() < 9? '0'+date.getDate():date.getDate();
+      month = months[date.getMonth()];
+      year = date.getFullYear().toString().slice(2,4)
+      data.labels.push(day + '-' + month + '-' + year);
+
+      data.datasets[CLOSE].data.push(fullData[i].Close)
+      data.datasets[HIGH].data.push(fullData[i].High)
+      data.datasets[LOW].data.push(fullData[i].Low)
+
+    }
+    return data
+  }
+});
+</script>
+</dom-module>

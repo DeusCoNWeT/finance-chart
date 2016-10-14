@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <script src="../moment/moment.js"></script>
 <link rel="import" href="../finance-historical/finance-historical.html">
+<link rel="import" href="../finance-value/finance-value.html">
 <link rel="import" href="../chart-elements/chart-line.html">
 <script src="../Chart.Zoom.js/Chart.Zoom.js"></script>
 
@@ -35,19 +36,122 @@ Example:
 
 <dom-module id="finance-chart">
   <template>
-  <style>
+  <style is="custom-style">
   :host {
-    display: block;
+    display: inline-block;
     box-sizing: border-box;
+    width: var(--fiance-chart-width,400px);
+    height: var(--finance-chart-height, 200px);
+  }
+  p{
+    margin:0;
   }
   chart-line{
-    width: 500px;
-    height: 500px;
+    width: 100%;
+    height: 100%;
+  }
+  /* entire container, keeps perspective */
+  .flip-container {
+    perspective: 1000px;
+    padding:8px;
+  }
+  /* flip the pane when hovered */
+  .flip-container.flip .flipper {
+    transform: rotateY(180deg);
+  }
+
+  .flip-container, .front, .back {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* flip speed goes here */
+  .flipper {
+    transition: 0.8s;
+    transform-style: preserve-3d;
+    position: relative;
+    height: 100%;
+    width: 100%;
+  }
+
+  /* hide back of pane during swap */
+  .front, .back {
+    backface-visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  /* front pane, placed above back */
+  .back {
+    z-index: 2;
+    /* for firefox 31 */
+    transform: rotateY(0deg);
+  }
+  /* back, initially hidden pane */
+  .front {
+    transform: rotateY(180deg);
+    border:1px solid #ddd;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    backgroud-color:rgba(210, 210, 210, 0.22);
+  }
+  .info {
+    width: 50%;
+    height: 100%;
+    float:left;
+  }
+  .left{
+  }
+  .right{
+  }
+  .change{
+    padding:3px 8px;
+  }
+  .increase{
+    color:green;
+  }
+  .decrease{
+    color:green;
+  }
+  .extra {
+    margin: 5px 5px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    padding: 5px 8px;
+    background-color: #F9F9F9;
+    width: 100px;
   }
   </style>
-  <finance-historical id="finance" symbol="[[symbol]]" end="[[end]]" start="[[start]]" data="{{response}}"></finance-historical>
-  <template is="dom-repeat" items="{{response}}">
-    <chart-line data="[[_getData(item)]]" options="{{options}}"></chart-line>
+  <finance-historical id="historical" symbol="[[symbol]]" end="[[end]]" start="[[start]]" data="{{historical}}"></finance-historical>
+  <finance-value id="value" symbol="[[symbol]]" data="{{current}}"></finance-value>
+  <template is="dom-if" if="{{_is_ready}}">
+    <template is="dom-repeat" items="{{historical}}">
+      <button on-click="flip">Swap</button>
+      <div class="flip-container" id="flipContainer">
+        <div class="flipper">
+          <div class="back">
+            <chart-line data="[[_getData(item, index)]]" options="{{_getOptions(options, item, index, current)}}"></chart-line>
+          </div>
+          <div class="front">
+            <template is="dom-repeat" items="{{_getCurrent(current,index)}}" as="now">
+              <div class="left info">
+                <p>{{now.Name}}</p>
+                <div class="extra">
+                  <p>Low {{now.DaysLow}}</p>
+                  <p>High {{now.DaysHigh}}</p>
+                  <p>Vol {{now.Volume}}</p>
+                </div>
+              </div>
+              <div class="right info">
+                <p class$="{{_getStyle(now)}} change">{{_getChange(now)}}</p>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </template>
   </template>
 </template>
 <script>
@@ -67,57 +171,103 @@ Polymer({
       type: Date,
       notify:true
     },
-    data: {
+    historical: {
       type:Array,
+      value: function(){return []},
       notify:true
     },
     options: {
       type: Object,
-      value: function(){return {
-
-        scales: {
-            xAxes: [{
-                type: 'time',
-                time: {
-                  displayFormats: {
-                    day: 'DD-MMM-YY',
-                    month: 'DD-MMM-YY',
-                    year: "DD-MMM-YY",
-                    week:"DD-MMM-YY"
-                  }
-                }
-            }],
-            yAxes: [{
-                type: 'linear'
-            }]
-        },
-        pan: {
-          enabled: true,
-          mode: 'x'
-        },
-        zoom: {
-          enabled: true,
-          mode: 'x',
-        },
-        title:{
-          display: true,
-          text: 'Custom Chart Title'
-        }
-      }
-      },
+      value: function(){return {}},
+      notify:true
+    },
+    current: {
+      type: Array,
+      value: function(){return []},
+      notify:true,
+    },
+    _is_ready: {
+      type: Boolean,
+      computed:'_checkReady(current.*, historical.*)',
       notify:true
     }
+  },
+  _checkReady: function(current, historical){
+    return current.base.length >0 && historical.base.length > 0;
+  },
+  flip: function(e){
+    this.querySelector('#flipContainer').classList.toggle('flip');
+  },
+  _getOptions: function(options,data,index,current){
+    function isObject(item) {
+      return (item && typeof item === 'object' && !Array.isArray(item) && item !== null);
+    }
+    function mergeDeep(target, source) {
+      let output = Object.assign({}, target);
+      if (isObject(target) && isObject(source)) {
+        Object.keys(source).forEach(function(key){
+          if (isObject(source[key])) {
+            if (!(key in target))
+            Object.assign(output, { [key]: source[key] });
+            else
+            output[key] = mergeDeep(target[key], source[key]);
+          } else {
+            Object.assign(output, { [key]: source[key] });
+          }
+        });
+      }
+      return output;
+    }
+    var name = current[index]?current[index].Name : 'Empty';
+    var default_properties = {
+      maintainAspectRatio:false,
+      scales: {
+        xAxes: [{
+          type: 'time',
+          time: {
+            displayFormats: {
+              day: 'DD-MMM-YY',
+              month: 'DD-MMM-YY',
+              year: "DD-MMM-YY",
+              week:"DD-MMM-YY"
+            }
+          }
+        }],
+        yAxes: [{
+          type: 'linear'
+        }]
+      },
+      pan: {
+        enabled: true,
+        mode: 'xy'
+      },
+      zoom: {
+        enabled: true,
+        mode: 'xy',
+      },
+      title:{
+        display: true,
+        text: name
+      },
+      legend:{
+        labels:{
+          boxWidth:15
+        }
+      },
+    }
+    return mergeDeep(default_properties,options);
   },
   _getData:function(fullData){
     var CLOSE= 0;
     var HIGH=1;
     var LOW=2;
 
+    // get historical
     var data = {
       labels: [],
       datasets: [
         {
-          label: fullData[0].Symbol + '(CLOSE)',
+          label: fullData[0].Symbol + '(close)',
           backgroundColor: "rgba(220,220,220,0.0)",
           borderColor: "rgba(39, 97, 209, 1)",
           borderWidth: 1,
@@ -128,7 +278,7 @@ Polymer({
           data: []
         },
         {
-          label: fullData[0].Symbol + '(HIGH)',
+          label: fullData[0].Symbol + '(high)',
           backgroundColor: "rgba(220,220,220,0.0)",
           borderColor: "rgba(39, 209, 40, 1)",
           borderWidth: 1,
@@ -139,7 +289,7 @@ Polymer({
           data: []
         },
         {
-          label: fullData[0].Symbol + '(LOW)',
+          label: fullData[0].Symbol + '(low)',
           backgroundColor: "rgba(220,220,220,0.0)",
           borderColor: "rgba(223, 91, 35, 1)",
           borderWidth: 1,
@@ -165,7 +315,29 @@ Polymer({
 
     }
     return data
+  },
+  _getCurrent:function(current, index){
+    return [current[index]];
+  },
+  _getChange: function(current){
+    var change = current.Change;
+    var perc = Math.round(current.Change/current.LastTradePriceOnly*10000)/100;
+    change +='('+ perc + '%)';
+    return change;
+  },
+  _getStyle: function(current){
+    var change = current.Change <0;
+    var color = "";
+    if(change<0){
+      color= 'descrease'
+    } else if (change>0){
+      color = "increase"
+    } else {
+      color = 'stable';
+    }
+    return color;
   }
+
 });
 </script>
 </dom-module>

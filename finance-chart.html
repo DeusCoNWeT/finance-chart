@@ -12,6 +12,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <script src="../moment/moment.js"></script>
 <link rel="import" href="../finance-historical/finance-historical.html">
 <link rel="import" href="../finance-value/finance-value.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../chart-elements/chart-line.html">
 <script src="../Chart.Zoom.js/Chart.Zoom.js"></script>
 
@@ -46,9 +48,16 @@ Example:
   p{
     margin:0;
   }
-  chart-line{
+  .fullChart{
     width: 100%;
     height: 100%;
+  }
+  .sortChart{
+    width:200px;
+    border:1px solid #ddd;
+    border-radius: 5px;
+    background-color:#f9f9f9;
+    margin: auto;
   }
   /* entire container, keeps perspective */
   .flip-container {
@@ -83,71 +92,120 @@ Example:
   }
 
   /* front pane, placed above back */
-  .back {
+  .front {
     z-index: 2;
     /* for firefox 31 */
+    color:#eee;
     transform: rotateY(0deg);
-  }
-  /* back, initially hidden pane */
-  .front {
-    transform: rotateY(180deg);
-    border:1px solid #ddd;
     padding: 10px;
     box-sizing: border-box;
+    border:1px solid #ddd;
     border-radius: 5px;
-    backgroud-color:rgba(210, 210, 210, 0.22);
+    background-color:#422a6b;
+    height: 160px;
+  }
+  /* back, initially hidden pane */
+  .back {
+    transform: rotateY(180deg);
   }
   .info {
-    width: 50%;
     height: 100%;
     float:left;
+    text-align: center;
+    display: inline-flex;
+    flex-direction: column;
   }
   .left{
+    width: 33.33%;
+  }
+  .left > p {
+    flex:1;
   }
   .right{
+    width: 66.66%;
   }
   .change{
     padding:3px 8px;
+    flex:1;
+    font-weight: bold;
+    text-shadow: 0px 0px 2px black;
   }
   .increase{
-    color:green;
+    color:#9fea48;
   }
   .decrease{
-    color:green;
+    color:#f44336;
   }
   .extra {
-    margin: 5px 5px;
+    display:inline-flex;
     border: 2px solid #ddd;
     border-radius: 5px;
     padding: 5px 8px;
     background-color: #F9F9F9;
-    width: 100px;
+    width: 120px;
+    color:#333;
+    box-sizing: border-box;
+  }
+  .extra > div {
+    width:50%;
+  }
+  .name {
+    text-shadow:0px 0px 2px #333;
+  }
+  .text{
+    font-size: 14px;
+    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+    padding:3px 0;
+  }
+  paper-icon-button{
+    position: absolute;
+    top:0;right:0;
+    z-index:1000;
+    --iron-icon:{
+      stroke:#333;
+      stoke-width:3.5%;
+    }
+  }
+  paper-icon-button:hover{
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 100%;
   }
   </style>
   <finance-historical id="historical" symbol="[[symbol]]" end="[[end]]" start="[[start]]" data="{{historical}}"></finance-historical>
   <finance-value id="value" symbol="[[symbol]]" data="{{current}}"></finance-value>
   <template is="dom-if" if="{{_is_ready}}">
     <template is="dom-repeat" items="{{historical}}">
-      <button on-click="flip">Swap</button>
-      <div class="flip-container" id="flipContainer">
+      <div class="flip-container" id$="flipContainer-{{index}}">
         <div class="flipper">
-          <div class="back">
-            <chart-line data="[[_getData(item, index)]]" options="{{_getOptions(options, item, index, current)}}"></chart-line>
-          </div>
           <div class="front">
+            <paper-icon-button icon="timeline" alt="show full historical data" title="show full historical data" on-click="flip" data-index$="{{index}}"></paper-icon-button>
             <template is="dom-repeat" items="{{_getCurrent(current,index)}}" as="now">
               <div class="left info">
-                <p>{{now.Name}}</p>
+                <p class="name">{{now.Name}}</p>
                 <div class="extra">
-                  <p>Low {{now.DaysLow}}</p>
-                  <p>High {{now.DaysHigh}}</p>
-                  <p>Vol {{now.Volume}}</p>
+                  <div>
+                    <p class="text">Low</p>
+                    <p class="text">High:</p>
+                    <p class="text">Vol</p>
+                    <p class="text">Curr.</p>
+                  </div>
+                  <div>
+                    <p class="text">{{now.DaysLow}}</p>
+                    <p class="text">{{now.DaysHigh}}</p>
+                    <p class="text">{{now.Volume}}</p>
+                    <p class="text">{{now.LastTradePriceOnly}}</p>
+                  </div>
                 </div>
               </div>
               <div class="right info">
                 <p class$="{{_getStyle(now)}} change">{{_getChange(now)}}</p>
+                <chart-line class="sortChart" data="[[_getData(item,index)]]" options="{{_getShortOptions()}}"></chart-line>
               </div>
             </template>
+          </div>
+          <div class="back">
+            <paper-icon-button title="Show resume" alt="Show resume" icon="arrow-back" on-click="flip" data-index$="{{index}}"></paper-icon-button>
+            <chart-line class="fullChart" data="[[_getData(item, index)]]" options="{{_getOptions(options, item, index, current)}}"></chart-line>
           </div>
         </div>
       </div>
@@ -196,7 +254,8 @@ Polymer({
     return current.base.length >0 && historical.base.length > 0;
   },
   flip: function(e){
-    this.querySelector('#flipContainer').classList.toggle('flip');
+    var index= e.currentTarget.getAttribute('data-index');
+    this.querySelector('#flipContainer-' + index).classList.toggle('flip');
   },
   _getOptions: function(options,data,index,current){
     function isObject(item) {
@@ -257,6 +316,35 @@ Polymer({
     }
     return mergeDeep(default_properties,options);
   },
+  _getShortOptions: function(){
+    var options = {
+      scales: {
+        xAxes: [{
+          type: 'time',
+          display:false
+        }],
+        yAxes: [{
+          type: 'linear',
+          display:true
+        }]
+      },
+      pan: {
+        enabled: true,
+      },
+      zoom: {
+        enabled: false,
+      },
+      legend:{
+        display:false
+      },
+      elements:{
+        point:{
+          radius:2
+        }
+      }
+    }
+    return options;
+  },
   _getData:function(fullData){
     var CLOSE= 0;
     var HIGH=1;
@@ -302,13 +390,9 @@ Polymer({
       ],
     };
     for (var i=fullData.length -1 ;i>=0;i--){
-      var months =["Jan.", "Feb.", "Mar.", "May", "Apr.", "Jun.", "Jul", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
-      var day,month,year, date= new Date(fullData[i].Date);
-      day = date.getDate() < 9? '0'+date.getDate():date.getDate();
-      month = months[date.getMonth()];
-      year = date.getFullYear().toString().slice(2,4)
-      data.labels.push(date);
+      var date= new Date(fullData[i].Date);
 
+      data.labels.push(date);
       data.datasets[CLOSE].data.push(fullData[i].Close)
       data.datasets[HIGH].data.push(fullData[i].High)
       data.datasets[LOW].data.push(fullData[i].Low)
@@ -326,10 +410,10 @@ Polymer({
     return change;
   },
   _getStyle: function(current){
-    var change = current.Change <0;
+    var change = current.Change;
     var color = "";
     if(change<0){
-      color= 'descrease'
+      color= 'decrease'
     } else if (change>0){
       color = "increase"
     } else {

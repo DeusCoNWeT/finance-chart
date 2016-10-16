@@ -62,7 +62,6 @@ Example:
   /* entire container, keeps perspective */
   .flip-container {
     perspective: 1000px;
-    padding:8px;
   }
   /* flip the pane when hovered */
   .flip-container.flip .flipper {
@@ -101,7 +100,12 @@ Example:
     box-sizing: border-box;
     border:1px solid #ddd;
     border-radius: 5px;
-    background-color:#422a6b;
+
+
+    background: #1e3c72; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to left, #1e3c72 , #2a5298); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to left, #1e3c72 , #2a5298); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
     height: 160px;
   }
   /* back, initially hidden pane */
@@ -285,10 +289,10 @@ Polymer({
           type: 'time',
           time: {
             displayFormats: {
-              day: 'DD-MMM-YY',
-              month: 'DD-MMM-YY',
-              year: "DD-MMM-YY",
-              week:"DD-MMM-YY"
+              day: 'DD-MMM.YY',
+              month: 'DD-MMM.YY',
+              year: "DD-MMM.YY",
+              week:"DD-MMM.YY"
             }
           }
         }],

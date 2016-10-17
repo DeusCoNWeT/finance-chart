@@ -1,6 +1,9 @@
 # finance-chart
 
-An element providing a starting point for your own reusable Polymer elements.
+Show a chart of finance value of any company using [Chart.js](http://www.chartjs.org/docs/)
+and [Chart.Zoom.js](https://github.com/chartjs/Chart.Zoom.js)
+
+[Demo and Docs](https://mortega5.github.io/finance-chart)
 
 
 ## Dependencies

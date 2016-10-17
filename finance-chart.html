@@ -14,6 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../finance-historical/finance-historical.html">
 <link rel="import" href="../finance-value/finance-value.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../chart-elements/chart-line.html">
 <script src="../Chart.Zoom.js/Chart.Zoom.js"></script>
@@ -23,18 +24,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 <!--
-An element providing a solution to no problem in particular.
+Show a chart of finance value of any company using Chart.js and Chart.Zoom.js
 
 Example:
+```
 
-<finance-chart></finance-chart>
+<finance-chart symbol="googl" end="2016-10-31" start="2016-9-31"></finance-chart>
 
-Example:
-
-<finance-chart>
-<h2>Hello finance-chart</h2>
-</finance-chart>
-
+```
 @demo demo/index.html
 @hero hero.svg
 -->
@@ -158,6 +155,8 @@ Example:
   }
   .name {
     text-shadow:0px 0px 2px #333;
+    color: white;
+    font-weight: bold;
   }
   .text{
     font-size: 14px;
@@ -180,6 +179,9 @@ Example:
   paper-icon-button:hover{
     background-color: rgba(0,0,0,0.3);
     border-radius: 100%;
+  }
+  .trending{
+    padding-bottom:2px;
   }
   </style>
   <finance-historical id="historical" symbol="[[symbol]]" end="[[end]]" start="[[start]]" data="{{historical}}"></finance-historical>
@@ -209,7 +211,7 @@ Example:
                 </div>
               </div>
               <div class="right info">
-                <p class$="{{_getStyle(now)}} change">{{_getChange(now)}}</p>
+                <p class$="{{_getStyle(now)}} change"><iron-icon class="trending" icon="{{_getTrending(now)}}"></iron-icon> {{_getChange(now)}}</p>
                 <chart-line class="sortChart" data="[[_getData(item,index)]]" options="{{_getShortOptions()}}"></chart-line>
               </div>
             </template>
@@ -228,28 +230,47 @@ Polymer({
   is: 'finance-chart',
 
   properties: {
+    /**
+      * Symbol name of a company
+    **/
     symbol: {
       type: String,
       notify:true,
     },
+    /**
+      End Date value for take data
+    **/
     end: {
       type: Date,
-      notify:true
+      notify:true,
+      value: new Date()
     },
+    /**
+      Inicial Date value for take data
+    **/
     start: {
       type: Date,
       notify:true
     },
+    /**
+    Historical values for symbol company
+    **/
     historical: {
       type:Array,
       value: function(){return []},
       notify:true
     },
+    /**
+     Options for full chart. Consult http://www.chartjs.org/docs/
+    */
     options: {
       type: Object,
       value: function(){return {}},
       notify:true
     },
+    /**
+      Current values for symbol company
+    */
     current: {
       type: Array,
       value: function(){return []},
@@ -264,8 +285,11 @@ Polymer({
   _checkReady: function(current, historical){
     return current.base.length >0 && historical.base.length > 0;
   },
-  flip: function(e){
-    var index= e.currentTarget.getAttribute('data-index');
+  /**
+    Flip between resume information and full chart
+  **/
+  flip: function(event){
+    var index= event.currentTarget.getAttribute('data-index');
     this.querySelector('#flipContainer-' + index).classList.toggle('flip');
   },
   _getOptions: function(options,data,index,current){
@@ -357,8 +381,8 @@ Polymer({
     return options;
   },
   _getData:function(fullData){
-    var CLOSE= 0;
-    var HIGH=1;
+    var HIGH= 0;
+    var CLOSE=1;
     var LOW=2;
 
     // get historical
@@ -366,22 +390,22 @@ Polymer({
       labels: [],
       datasets: [
         {
-          label: fullData[0].Symbol + '(close)',
+          label: fullData[0].Symbol + '(high)',
           backgroundColor: "rgba(220,220,220,0.0)",
-          borderColor: "#1976D2",
+          borderColor: "#4CAF50",
           borderWidth: 1,
-          pointBackgroundColor: "#1976D2",
+          pointBackgroundColor: "#4CAF50",
           pointBorderColor: "#fff",
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: "rgba(220,220,220,1)",
           data: []
         },
         {
-          label: fullData[0].Symbol + '(high)',
+          label: fullData[0].Symbol + '(close)',
           backgroundColor: "rgba(220,220,220,0.0)",
-          borderColor: "#4CAF50",
+          borderColor: "#1976D2",
           borderWidth: 1,
-          pointBackgroundColor: "#4CAF50",
+          pointBackgroundColor: "#1976D2",
           pointBorderColor: "#fff",
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: "rgba(220,220,220,1)",
@@ -431,7 +455,17 @@ Polymer({
       color = 'stable';
     }
     return color;
-  }
+  },
+  _getTrending: function(current){
+    var change = current.Change;
+    if(change<0){
+      return "trending-down";
+    } else if (change>0){
+      return "trending-up";
+    } else {
+      return 'trending-flat';
+    }
+  },
 
 });
 </script>

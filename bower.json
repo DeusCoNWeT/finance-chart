@@ -2,17 +2,20 @@
   "name": "finance-chart",
   "version": "1.0.6",
   "authors": [
-    "Anonymous <anonymous@example.com>"
+    "Miguel Ortega Moreno<mortega@conwet.com>"
   ],
-  "description": "An element providing a solution to no problem in particular.",
+  "description": "Show a chart of finance value of any company",
   "keywords": [
     "web-component",
     "polymer",
-    "seed"
+    "seed",
+    "finance",
+    "chart",
+    "web-components"
   ],
   "main": "finance-chart.html",
   "license": "http://polymer.github.io/LICENSE.txt",
-  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "homepage": "https://github.com/mortega5/finance-chart",
   "ignore": [
     "/.*",
     "/test/"
@@ -24,7 +27,7 @@
     "Chart.Zoom.js": "^0.2.0",
     "moment": "^2.15.1",
     "finance-value": "*",
-    "iron-icons": "PolymerElements/iron-icons#^1.1.3",
+    "iron-icons": "^1.1.3",
     "paper-icon-button": "^1.1.3",
     "octicons": "^4.4.0"
   },

@@ -10,12 +10,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../polymer/polymer.html">
 <script src="../moment/moment.js"></script>
+
 <link rel="import" href="../finance-historical/finance-historical.html">
 <link rel="import" href="../finance-value/finance-value.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../chart-elements/chart-line.html">
 <script src="../Chart.Zoom.js/Chart.Zoom.js"></script>
+<link rel="stylesheet" href="../octicons/build/font/octicons.css">
+
 
 
 
@@ -146,9 +149,9 @@ Example:
     border-radius: 5px;
     padding: 5px 8px;
     background-color: #F9F9F9;
-    width: 120px;
     color:#333;
     box-sizing: border-box;
+    text-align: left;
   }
   .extra > div {
     width:50%;
@@ -161,15 +164,19 @@ Example:
     font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
     padding:3px 0;
   }
-  paper-icon-button{
+  paper-icon-button {
     position: absolute;
     top:0;right:0;
     z-index:1000;
-    --iron-icon:{
-      stroke:#333;
-      stoke-width:3.5%;
-    }
   }
+  .graph{
+    position: absolute;
+    top:5px;right:5px;
+    z-index:1000;
+    padding:8px;
+    font-weight: bold;
+  }
+  .graph:hover,
   paper-icon-button:hover{
     background-color: rgba(0,0,0,0.3);
     border-radius: 100%;
@@ -182,14 +189,14 @@ Example:
       <div class="flip-container" id$="flipContainer-{{index}}">
         <div class="flipper">
           <div class="front">
-            <paper-icon-button icon="timeline" alt="show full historical data" title="show full historical data" on-click="flip" data-index$="{{index}}"></paper-icon-button>
+            <p alt="show full historical data" title="show full historical data" class="octicon octicon-graph graph" on-click="flip" data-index$="{{index}}"></p>
             <template is="dom-repeat" items="{{_getCurrent(current,index)}}" as="now">
               <div class="left info">
                 <p class="name">{{now.Name}}</p>
                 <div class="extra">
                   <div>
-                    <p class="text">Low</p>
-                    <p class="text">High:</p>
+                    <p class="text low">Low</p>
+                    <p class="text high">High:</p>
                     <p class="text">Vol</p>
                     <p class="text">Curr.</p>
                   </div>
@@ -361,9 +368,9 @@ Polymer({
         {
           label: fullData[0].Symbol + '(close)',
           backgroundColor: "rgba(220,220,220,0.0)",
-          borderColor: "rgba(39, 97, 209, 1)",
+          borderColor: "#1976D2",
           borderWidth: 1,
-          pointBackgroundColor: "rgba(39, 97, 209, 1)",
+          pointBackgroundColor: "#1976D2",
           pointBorderColor: "#fff",
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: "rgba(220,220,220,1)",
@@ -372,9 +379,9 @@ Polymer({
         {
           label: fullData[0].Symbol + '(high)',
           backgroundColor: "rgba(220,220,220,0.0)",
-          borderColor: "rgba(39, 209, 40, 1)",
+          borderColor: "#4CAF50",
           borderWidth: 1,
-          pointBackgroundColor: "rgba(39, 209, 40, 1)",
+          pointBackgroundColor: "#4CAF50",
           pointBorderColor: "#fff",
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: "rgba(220,220,220,1)",

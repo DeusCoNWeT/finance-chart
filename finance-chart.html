@@ -232,6 +232,7 @@ Polymer({
     symbol: {
       type: String,
       notify:true,
+      observer: "updateData"
     },
     /**
       End Date value for take data
@@ -277,6 +278,9 @@ Polymer({
       computed:'_checkReady(current.*, historical.*)',
       notify:true
     }
+  },
+  updateData: function(){
+      this.$.value.requestData()
   },
   _checkReady: function(current, historical){
     return current.base.length >0 && historical.base.length > 0;

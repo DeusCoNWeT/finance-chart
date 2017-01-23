@@ -181,7 +181,7 @@ Example:
   }
   </style>
   <finance-historical id="historical" symbol="[[symbol]]" end="[[end]]" start="[[start]]" data="{{historical}}" on-finance-historical-ready="ready"></finance-historical>
-  <finance-value id="value" symbol="[[symbol]]" data="{{current}}"></finance-value>
+  <finance-value id="value" symbol="[[symbol]]" data="{{current}}"  accuracy="[[accuracy]]"></finance-value>
   <template is="dom-if" if="{{_is_ready}}">
     <template is="dom-repeat" items="{{historical}}">
       <div class="flip-container" id$="flipContainer-{{index}}">
@@ -278,6 +278,11 @@ Polymer({
       type: Boolean,
       computed:'_checkReady(current.*, historical.*)',
       notify:true
+    },
+    accuracy: {
+      type:Number,
+      value: 100,
+      reflectToAttribute: true
     }
   },
   updateData: function(){

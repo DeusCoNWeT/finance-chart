@@ -180,7 +180,7 @@ Example:
     padding-bottom:2px;
   }
   </style>
-  <finance-historical id="historical" symbol="[[symbol]]" end="[[end]]" start="[[start]]" data="{{historical}}" on-finance-historical-ready="ready"></finance-historical>
+  <finance-historical id="historical" symbol="[[symbol]]" end="[[end]]" delay="[[delay]]" start="[[start]]" data="{{historical}}" on-finance-historical-error="errorHandler" on-finance-historical-ready="historicalReady"></finance-historical>
   <finance-value id="value" symbol="[[symbol]]" data="{{current}}"  accuracy="[[accuracy]]"></finance-value>
   <template is="dom-if" if="{{_is_ready}}">
     <template is="dom-repeat" items="{{historical}}">
@@ -219,6 +219,7 @@ Example:
         </div>
       </div>
     </template>
+    <template is="dom-if" if="{{historical.lenght == 0}}"></template>
   </template>
 </template>
 <script src="../Chart.Zoom.js/Chart.Zoom.js"></script>
@@ -282,6 +283,11 @@ Polymer({
     accuracy: {
       type:Number,
       value: 100,
+      reflectToAttribute: true
+    },
+    delay: {
+      type: Number,
+      value:0,
       reflectToAttribute: true
     }
   },
@@ -478,8 +484,11 @@ Polymer({
   _getHigh: function(current){
     return current.DaysHigh || current.YearHigh
   },
-  ready: function(){
+  historicalReady: function(){
     this.fire('finance-chart-ready',{data:this.historical});
+  },
+  errorHandler: function(e){
+    this.fire('finance-chart-error',e)
   }
 });
 </script>

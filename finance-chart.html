@@ -205,6 +205,22 @@ Example:
       .trending {
         padding-bottom: 2px;
       }
+      
+      .refresh {
+        position: absolute;
+        right: 5px;
+        top: -20px;
+        color: white;
+        z-index: 100;
+        padding: 5px;
+        width: 32px;
+        height: 32px;
+      }
+      
+      .refresh:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 100%;
+      }
     </style>
     <finance-historical id="historical" symbol="[[symbol]]" end="[[end]]" delay="[[delay]]" start="[[start]]" data="{{historical}}"
       on-finance-historical-error="errorHandler" on-finance-historical-ready="historicalReady"></finance-historical>
@@ -214,6 +230,7 @@ Example:
         <div class="flip-container" id$="flipContainer-{{index}}">
           <div class="flipper vertical layout center-center">
             <div class="front">
+              <paper-icon-button class="refresh" icon="refresh" on-click="updateData"></paper-icon-button>
               <p alt="show full historical data" title="show full historical data" class="octicon octicon-graph graph" on-click="flip"
                 data-index$="{{index}}"></p>
               <template is="dom-repeat" items="{{_getCurrent(current,index)}}" as="now">
@@ -321,8 +338,9 @@ Example:
         }
       },
       updateData: function () {
+        this.fire('finance-chart-reload',{});
         this.$.value.requestData();
-        this.$.historical.updateData();
+        this.$.historical.requestData();
       },
       _checkReady: function (current, historical) {
         return current.base.length > 0 && historical.base.length > 0;
@@ -519,10 +537,6 @@ Example:
       },
       errorHandler: function (e) {
         this.fire('finance-chart-error', e)
-      },
-      reload: function () {
-        this._is_ready = false;
-        this.updateData();
       }
     });
 

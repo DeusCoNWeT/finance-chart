@@ -335,7 +335,17 @@ Example:
           type: Number,
           value: 0,
           reflectToAttribute: true
+        },
+        refresh_time: {
+          type: Number,
+          value:60000
         }
+      },
+      attached: function(){
+        this._interval= window.setInterval(this.updateData.bind(this),this.refresh_time)
+      },
+      detached: function(){
+        window.clearInterval(this._interval);
       },
       updateData: function () {
         this.fire('finance-chart-reload',{});

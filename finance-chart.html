@@ -227,12 +227,11 @@ Example:
     <finance-value id="value" symbol="[[symbol]]" data="{{current}}" accuracy="[[accuracy]]"></finance-value>
     <template is="dom-if" if="{{_is_ready}}">
       <template is="dom-if" if="{{historical.length}}">
-        <div class="flip-container" id$="flipContainer-{{index}}">
+        <div class="flip-container" id="flipContainer">
           <div class="flipper vertical layout center-center">
             <div class="front">
               <paper-icon-button class="refresh" icon="refresh" on-click="updateData"></paper-icon-button>
-              <p alt="show full historical data" title="show full historical data" class="octicon octicon-graph graph" on-click="flip"
-                data-index$="{{index}}"></p>
+              <p alt="show full historical data" title="show full historical data" class="octicon octicon-graph graph" on-click="flip"></p>
               <template is="dom-if" if="{{current}}">
                 <div class="left info">
                   <p class="name">{{symbol}}</p>
@@ -254,13 +253,13 @@ Example:
                 <div class="right info">
                   <p class$="{{_getStyle(current)}} change">
                     <iron-icon class="trending" icon="{{_getTrending(current)}}"></iron-icon> {{_getChange(current)}}</p>
-                  <chart-line class="sortChart" data="[[_getData(historical)]]" options="{{_getShortOptions()}}"></chart-line>
+                  <chart-line class="sortChart" data="[[_getData(historical)]]" options$="{{_getShortOptions()}}"></chart-line>
                 </div>
               </template>
             </div>
             <div class="back">
-              <paper-icon-button title="Show resume" alt="Show resume" icon="arrow-back" on-click="flip" data-index$="{{index}}"></paper-icon-button>
-              <chart-line class="fullChart" data="[[_getData(historical)]]" options="{{_getOptions(options, item, index, symbol)}}"></chart-line>
+              <paper-icon-button title="Show resume" alt="Show resume" icon="arrow-back" on-click="flip"></paper-icon-button>
+              <chart-line class="fullChart" data="[[_getData(historical)]]" options$="{{_getOptions(options, current, symbol)}}"></chart-line>
             </div>
           </div>
         </div>
@@ -359,10 +358,9 @@ Example:
         Flip between resume information and full chart
       **/
       flip: function (event) {
-        var index = event.currentTarget.getAttribute('data-index');
-        this.querySelector('#flipContainer-' + index).classList.toggle('flip');
+        this.$$('#flipContainer').classList.toggle('flip');
       },
-      _getOptions: function (options, data, index, symbol) {
+      _getOptions: function (options, data, symbol) {
         function isObject(item) {
           return (item && typeof item === 'object' && !Array.isArray(item) && item !== null);
         }
@@ -437,7 +435,7 @@ Example:
             enabled: true,
           },
           zoom: {
-            enabled: false,
+            enabled: true,
           },
           legend: {
             display: false

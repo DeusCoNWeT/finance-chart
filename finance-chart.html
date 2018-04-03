@@ -32,7 +32,7 @@ Example:
 
 <dom-module id="finance-chart">
   <template>
-    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+    <style is="custom-style">
        :host {
         display: inline-block;
         box-sizing: border-box;
@@ -232,30 +232,32 @@ Example:
           <div class="flipper vertical layout center-center">
             <div class="front">
               <paper-icon-button class="refresh" icon="refresh" on-click="updateData"></paper-icon-button>
-              <img alt="show full historical data" src="pie-chart-512.png" title="show full historical data" class="graph" on-click="flip"></img>
-              <template is="dom-if" if="{{current}}">
-                <div class="left info">
-                  <p class="name">{{symbol}}</p>
-                  <div class="extra flex">
-                    <div>
-                      <p class="text low">Low</p>
-                      <p class="text high">High:</p>
-                      <p class="text">Vol:</p>
-                      <p class="text">Close:</p>
-                    </div>
-                    <div>
-                      <p class="text">{{current.Low}}</p>
-                      <p class="text">{{current.High}}</p>
-                      <p class="text">{{current.Volume}}</p>
-                      <p class="text">{{current.Close}}</p>
+              <template is="dom-if" if="{{updatePage}}">
+                <img alt="show full historical data" src="pie-chart-512.png" title="show full historical data" class="graph" on-click="flip"></img>
+                <template is="dom-if" if="{{current}}">
+                  <div class="left info">
+                    <p class="name">{{symbol}}</p>
+                    <div class="extra flex">
+                      <div>
+                        <p class="text low">Low</p>
+                        <p class="text high">High:</p>
+                        <p class="text">Vol:</p>
+                        <p class="text">Close:</p>
+                      </div>
+                      <div>
+                        <p class="text">{{current.Low}}</p>
+                        <p class="text">{{current.High}}</p>
+                        <p class="text">{{current.Volume}}</p>
+                        <p class="text">{{current.Close}}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="right info">
-                  <p class$="{{_getStyle(current)}} change">
-                    <iron-icon class="trending" icon="{{_getTrending(current)}}"></iron-icon> {{_getChange(current)}}</p>
-                  <chart-line class="sortChart" data="[[_getData(historical)]]" options$="{{_getShortOptions()}}"></chart-line>
-                </div>
+                  <div class="right info">
+                    <p class$="{{_getStyle(current)}} change">
+                      <iron-icon class="trending" icon="{{_getTrending(current)}}"></iron-icon> {{_getChange(current)}}</p>
+                    <chart-line class="sortChart" data="[[_getData(historical)]]" options$="{{_getShortOptions()}}"></chart-line>
+                  </div>
+                </template>
               </template>
             </div>
             <div class="back">
@@ -313,6 +315,9 @@ Example:
           value: function () { return {} },
           notify: true
         },
+
+        updatePage: { value: true },
+
         /**
           Current values for symbol company
         */
@@ -339,6 +344,10 @@ Example:
         refresh_time: {
           type: Number,
           value:60000
+        },
+        uptimeprob: {
+          type:Number,
+          value:0
         }
       },
       attached: function(){
@@ -347,7 +356,18 @@ Example:
       detached: function(){
         window.clearInterval(this._interval);
       },
+
+      uptime: function (probability) {
+        if (probability > 100 || probability < 0) {
+          throw "Error: probability must be between 0 and 100";
+        }
+        var number = Math.random();
+        number = Math.trunc(number * 100);
+        this.updatePage = number < probability;
+      },
+
       updateData: function () {
+        this.uptime(this.uptimeprob);
         this.fire('finance-chart-reload',{});
         this.$.value.requestData();
         this.$.historical.requestData();
